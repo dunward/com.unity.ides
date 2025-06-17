@@ -67,16 +67,16 @@ namespace Microsoft.Unity.VisualStudio.Editor
 		private static bool IsCandidateForDiscovery(string path) // what is this?
 		{
 #if UNITY_EDITOR_OSX
-			return Directory.Exists(path) && Regex.IsMatch(path, ".*Code.*.app$", RegexOptions.IgnoreCase);
+			return Directory.Exists(path) && Regex.IsMatch(path, ".*Windsurf.*.app$", RegexOptions.IgnoreCase);
 #elif UNITY_EDITOR_WIN
 			return File.Exists(path) && Regex.IsMatch(path, ".*Windsurf.*.exe$", RegexOptions.IgnoreCase);
 #else
-			return File.Exists(path) && path.EndsWith("cursor", StringComparison.OrdinalIgnoreCase);
+			return File.Exists(path) && path.EndsWith("windsurf", StringComparison.OrdinalIgnoreCase);
 #endif
 		}
 
 		[Serializable]
-		internal class VisualStudioCodeManifest
+		internal class WindsurfManifest
 		{
 			public string name;
 			public string version;
@@ -118,7 +118,7 @@ namespace Microsoft.Unity.VisualStudio.Editor
 				var manifestFullPath = IOPath.Combine(manifestBase, "resources", "app", "package.json");
 				if (File.Exists(manifestFullPath))
 				{
-					var manifest = JsonUtility.FromJson<VisualStudioCodeManifest>(File.ReadAllText(manifestFullPath));
+					var manifest = JsonUtility.FromJson<WindsurfManifest>(File.ReadAllText(manifestFullPath));
 					Version.TryParse(manifest.version.Split('-').First(), out version);
 					isPrerelease = manifest.version.ToLower().Contains("insider");
 				}
@@ -136,8 +136,6 @@ namespace Microsoft.Unity.VisualStudio.Editor
 				Path = editorPath,
 				Version = version ?? new Version()
 			};
-
-			UnityEngine.Debug.LogError($"{installation.Path}");
 
 			return true;
 		}
@@ -157,12 +155,12 @@ namespace Microsoft.Unity.VisualStudio.Editor
 			}
 #elif UNITY_EDITOR_OSX
 			var appPath = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
-			candidates.AddRange(Directory.EnumerateDirectories(appPath, "Visual Studio Code*.app"));
+			candidates.AddRange(Directory.EnumerateDirectories(appPath, "Windsurf*.app"));
 #elif UNITY_EDITOR_LINUX
 			// Well known locations
-			candidates.Add("/usr/bin/code");
-			candidates.Add("/bin/code");
-			candidates.Add("/usr/local/bin/code");
+			candidates.Add("/usr/bin/windsurf");
+			candidates.Add("/bin/windsurf");
+			candidates.Add("/usr/local/bin/windsurf");
 
 			// Preference ordered base directories relative to which desktop files should be searched
 			candidates.AddRange(GetXdgCandidates());
@@ -191,7 +189,7 @@ namespace Microsoft.Unity.VisualStudio.Editor
 
 				try
 				{
-					var desktopFile = IOPath.Combine(dir, "applications/code.desktop");
+					var desktopFile = IOPath.Combine(dir, "applications/windsurf.desktop");
 					if (!File.Exists(desktopFile))
 						continue;
 				
