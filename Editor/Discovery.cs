@@ -13,6 +13,9 @@ namespace Microsoft.Unity.VisualStudio.Editor
 	{
 		public static IEnumerable<IVisualStudioInstallation> GetVisualStudioInstallations()
 		{
+			foreach (var installation in KiroInstallation.GetVisualStudioInstallations())
+				yield return installation;
+
 			foreach (var installation in CursorInstallation.GetVisualStudioInstallations())
 				yield return installation;
 
