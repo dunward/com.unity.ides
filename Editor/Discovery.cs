@@ -41,8 +41,9 @@ namespace Microsoft.Unity.VisualStudio.Editor
 			return false;
 		}
 
-		public static void Initialize()
+		public static void Initialize() // ?
 		{
+			KiroInstallation.Initialize();
 			CursorInstallation.Initialize();
 			WindsurfInstallation.Initialize();
 		}
