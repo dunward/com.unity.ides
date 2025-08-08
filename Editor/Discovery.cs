@@ -27,6 +27,9 @@ namespace Microsoft.Unity.VisualStudio.Editor
 		{
 			try
 			{
+				if (KiroInstallation.TryDiscoverInstallation(editorPath, out installation))
+					return true;
+
 				if (CursorInstallation.TryDiscoverInstallation(editorPath, out installation))
 					return true;
 
