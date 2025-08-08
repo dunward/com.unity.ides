@@ -47,7 +47,7 @@ namespace Microsoft.Unity.VisualStudio.Editor
 				try
 				{
 					var installations = Discovery
-						.GetVisualStudioInstallations()
+						.GetInstallations()
 						.Cast<VisualStudioInstallation>()
 						.OrderByDescending(vsi => !vsi.IsPrerelease)
 						.ThenBy(vsi => vsi.Version)

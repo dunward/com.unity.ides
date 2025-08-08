@@ -67,7 +67,7 @@ namespace Microsoft.Unity.VisualStudio.Editor
 			try
 			{
 				return Discovery
-					.GetVisualStudioInstallations()
+					.GetInstallations()
 					.ToDictionary(i => Path.GetFullPath(i.Path), i => i);
 			}
 			catch (Exception ex)

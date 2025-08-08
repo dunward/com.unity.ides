@@ -11,15 +11,15 @@ namespace Microsoft.Unity.VisualStudio.Editor
 {
 	internal static class Discovery
 	{
-		public static IEnumerable<IVisualStudioInstallation> GetVisualStudioInstallations()
+		public static IEnumerable<IVisualStudioInstallation> GetInstallations()
 		{
-			foreach (var installation in KiroInstallation.GetVisualStudioInstallations())
+			foreach (var installation in KiroInstallation.GetInstallations())
 				yield return installation;
 
-			foreach (var installation in CursorInstallation.GetVisualStudioInstallations())
+			foreach (var installation in CursorInstallation.GetInstallations())
 				yield return installation;
 
-			foreach (var installation in WindsurfInstallation.GetVisualStudioInstallations())
+			foreach (var installation in WindsurfInstallation.GetInstallations())
 				yield return installation;
 		}
 

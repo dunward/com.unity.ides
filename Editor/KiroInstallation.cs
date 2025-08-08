@@ -140,7 +140,7 @@ namespace Microsoft.Unity.VisualStudio.Editor
 			return true;
 		}
 
-		public static IEnumerable<IVisualStudioInstallation> GetVisualStudioInstallations()
+		public static IEnumerable<IVisualStudioInstallation> GetInstallations()
 		{
 			var candidates = new List<string>();
 
