@@ -146,12 +146,11 @@ namespace Microsoft.Unity.VisualStudio.Editor
 
 #if UNITY_EDITOR_WIN
 			var localAppPath = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs");
-			// var programFiles = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+			var programFiles = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
 
 			foreach (var basePath in new[] {localAppPath})
 			{
 				candidates.Add(IOPath.Combine(basePath, "Kiro", "Kiro.exe"));
-				UnityEngine.Debug.LogError($"KiroInstallation: {IOPath.Combine(basePath, "Kiro", "Kiro.exe")}");
 			}
 #elif UNITY_EDITOR_OSX
 			var appPath = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
