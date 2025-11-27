@@ -43,7 +43,7 @@ namespace Microsoft.Unity.VisualStudio.Editor
 				return null;
 
 			return Directory
-				.EnumerateDirectories(extensionsPath, $"{MicrosoftUnityExtensionId}*") // publisherid.extensionid
+				.EnumerateDirectories(extensionsPath, $"{CloverExtensionId}*") // publisherid.extensionid
 				.OrderByDescending(n => n)
 				.FirstOrDefault();
 		}
@@ -238,219 +238,16 @@ namespace Microsoft.Unity.VisualStudio.Editor
 				var enablePatch = !File.Exists(IOPath.Combine(vscodeDirectory, ".vstupatchdisable"));
 
 				CreateRecommendedExtensionsFile(vscodeDirectory, enablePatch);
-				CreateSettingsFile(vscodeDirectory, enablePatch);
-				CreateLaunchFile(vscodeDirectory, enablePatch);
 			}
 			catch (IOException)
 			{
 			}			
 		}
 
-		private const string DefaultLaunchFileContent = @"{
-    ""version"": ""0.2.0"",
-    ""configurations"": [
-        {
-            ""name"": ""Attach to Unity"",
-            ""type"": ""vstuc"",
-            ""request"": ""attach""
-        }
-     ]
-}";
-
-		private static void CreateLaunchFile(string vscodeDirectory, bool enablePatch)
-		{
-			var launchFile = IOPath.Combine(vscodeDirectory, "launch.json");
-			if (File.Exists(launchFile))
-			{
-				if (enablePatch)
-					PatchLaunchFile(launchFile);
-
-				return;
-			}
-
-			File.WriteAllText(launchFile, DefaultLaunchFileContent);
-		}
-
-		private static void PatchLaunchFile(string launchFile)
-		{
-			try
-			{
-				const string configurationsKey = "configurations";
-				const string typeKey = "type";
-
-				var content = File.ReadAllText(launchFile);
-				var launch = JSONNode.Parse(content);
-
-				var configurations = launch[configurationsKey] as JSONArray;
-				if (configurations == null)
-				{
-					configurations = new JSONArray();
-					launch.Add(configurationsKey, configurations);
-				}
-
-				if (configurations.Linq.Any(entry => entry.Value[typeKey].Value == "vstuc"))
-					return;
-
-				var defaultContent = JSONNode.Parse(DefaultLaunchFileContent);
-				configurations.Add(defaultContent[configurationsKey][0]);
-
-				WriteAllTextFromJObject(launchFile, launch);
-			}
-			catch (Exception)
-			{
-				// do not fail if we cannot patch the launch.json file
-			}
-		}
-
-		private void CreateSettingsFile(string vscodeDirectory, bool enablePatch)
-		{
-			var settingsFile = IOPath.Combine(vscodeDirectory, "settings.json");
-			if (File.Exists(settingsFile))
-			{
-				if (enablePatch)
-					PatchSettingsFile(settingsFile);
-
-				return;
-			}
-
-			const string excludes = @"    ""files.exclude"": {
-        ""**/.DS_Store"": true,
-        ""**/.git"": true,
-        ""**/.vs"": true,
-        ""**/.gitmodules"": true,
-        ""**/.vsconfig"": true,
-        ""**/*.booproj"": true,
-        ""**/*.pidb"": true,
-        ""**/*.suo"": true,
-        ""**/*.user"": true,
-        ""**/*.userprefs"": true,
-        ""**/*.unityproj"": true,
-        ""**/*.dll"": true,
-        ""**/*.exe"": true,
-        ""**/*.pdf"": true,
-        ""**/*.mid"": true,
-        ""**/*.midi"": true,
-        ""**/*.wav"": true,
-        ""**/*.gif"": true,
-        ""**/*.ico"": true,
-        ""**/*.jpg"": true,
-        ""**/*.jpeg"": true,
-        ""**/*.png"": true,
-        ""**/*.psd"": true,
-        ""**/*.tga"": true,
-        ""**/*.tif"": true,
-        ""**/*.tiff"": true,
-        ""**/*.3ds"": true,
-        ""**/*.3DS"": true,
-        ""**/*.fbx"": true,
-        ""**/*.FBX"": true,
-        ""**/*.lxo"": true,
-        ""**/*.LXO"": true,
-        ""**/*.ma"": true,
-        ""**/*.MA"": true,
-        ""**/*.obj"": true,
-        ""**/*.OBJ"": true,
-        ""**/*.asset"": true,
-        ""**/*.cubemap"": true,
-        ""**/*.flare"": true,
-        ""**/*.mat"": true,
-        ""**/*.meta"": true,
-        ""**/*.prefab"": true,
-        ""**/*.unity"": true,
-        ""build/"": true,
-        ""Build/"": true,
-        ""Library/"": true,
-        ""library/"": true,
-        ""obj/"": true,
-        ""Obj/"": true,
-        ""Logs/"": true,
-        ""logs/"": true,
-        ""ProjectSettings/"": true,
-        ""UserSettings/"": true,
-        ""temp/"": true,
-        ""Temp/"": true
-    }";
-
-			var content = @"{
-" + excludes + @",
-    ""files.associations"": {
-        ""*.asset"": ""yaml"",
-        ""*.meta"": ""yaml"",
-        ""*.prefab"": ""yaml"",
-        ""*.unity"": ""yaml"",
-    },
-    ""explorer.fileNesting.enabled"": true,
-    ""explorer.fileNesting.patterns"": {
-        ""*.sln"": ""*.csproj"",
-    },
-    ""dotnet.defaultSolution"": """ + IOPath.GetFileName(ProjectGenerator.SolutionFile()) + @"""
-}";
-
-			File.WriteAllText(settingsFile, content);
-		}
-
-		private void PatchSettingsFile(string settingsFile)
-		{
-			try
-			{
-				const string excludesKey = "files.exclude";
-				const string solutionKey = "dotnet.defaultSolution";
-
-				var content = File.ReadAllText(settingsFile);
-				var settings = JSONNode.Parse(content);
-
-				var excludes = settings[excludesKey] as JSONObject;
-				if (excludes == null)
-					return;
-
-				var patchList = new List<string>();
-				var patched = false;
-
-				// Remove files.exclude for solution+project files in the project root
-				foreach (var exclude in excludes)
-				{
-					if (!bool.TryParse(exclude.Value, out var exc) || !exc)
-						continue;
-
-					var key = exclude.Key;
-
-					if (!key.EndsWith(".sln") && !key.EndsWith(".csproj"))
-						continue;
-
-					if (!Regex.IsMatch(key, "^(\\*\\*[\\\\\\/])?\\*\\.(sln|csproj)$"))
-						continue;
-
-					patchList.Add(key);
-					patched = true;
-				}
-
-				// Check default solution
-				var defaultSolution = settings[solutionKey];
-				var solutionFile = IOPath.GetFileName(ProjectGenerator.SolutionFile());
-				if (defaultSolution == null || defaultSolution.Value != solutionFile)
-				{
-					settings[solutionKey] = solutionFile;
-					patched = true;
-				}
-
-				if (!patched)
-					return;
-
-				foreach (var patch in patchList)
-					excludes.Remove(patch);
-
-				WriteAllTextFromJObject(settingsFile, settings);
-			}
-			catch (Exception)
-			{
-				// do not fail if we cannot patch the settings.json file
-			}
-		}
-
-		private const string MicrosoftUnityExtensionId = "visualstudiotoolsforunity.vstuc";
+		private const string CloverExtensionId = "november.clover-unity";
 		private const string DefaultRecommendedExtensionsContent = @"{
     ""recommendations"": [
-      """+ MicrosoftUnityExtensionId + @"""
+      """+ CloverExtensionId + @"""
     ]
 }
 ";
@@ -486,10 +283,10 @@ namespace Microsoft.Unity.VisualStudio.Editor
 					extensions.Add(recommendationsKey, recommendations);
 				}
 
-				if (recommendations.Linq.Any(entry => entry.Value.Value == MicrosoftUnityExtensionId))
+				if (recommendations.Linq.Any(entry => entry.Value.Value == CloverExtensionId))
 					return;
 
-				recommendations.Add(MicrosoftUnityExtensionId);
+				recommendations.Add(CloverExtensionId);
 				WriteAllTextFromJObject(extensionFile, extensions);
 			}
 			catch (Exception)
