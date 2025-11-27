@@ -1,6 +1,6 @@
 # Multi IDE Support for Unity
 
-No more install multiple IDE-specific packages like Cursor, Windsurf, Kiro.
+No more install multiple IDE-specific packages like Cursor, Windsurf, Kiro, Antigravity.
 This package provides seamless multi-IDE support for Unity.
 
 ## Install
@@ -17,3 +17,4 @@ Name | Windows | Mac | Linux
 Cursor | ✅ | ✅ | ❓
 Windsurf | ✅ | ✅ | ❓
 Kiro | ✅ | ❓ | ❓
+Antigravity | ✅ | ❓ | ❓
